@@ -1,0 +1,38 @@
+* {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+#header{
+    padding: 2em;
+    background: #D50000;
+    color: white;
+    font-weight: bold;
+}
+.row{
+    margin: 0;
+}
+.card {
+    margin-bottom: 1em;
+    padding: 1em;
+}
+ul{
+    border-radius: 1em;
+}
+li {
+    list-style: none;
+    display: block;
+    background: aliceblue;
+    padding: 1em;
+    cursor: pointer;
+}
+li.active{
+    background: #D50000;
+    color: white
+}
+#footer{
+    text-align: center;
+    padding: 2em;
+    background: #333;
+    color: white
+}

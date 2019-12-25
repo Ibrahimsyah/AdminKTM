@@ -1,0 +1,188 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Admin Kamus Teknik Mesin</title>
+    <link rel="stylesheet" href="./data/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./data/css/main.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <section id="header">
+            <h1 class="text-center">Halaman Admin Kamus Teknik Mesin</h1>
+        </section>
+        <section id="content">
+            <div class="row">
+                <div class="col-lg-8 col-md-12" style="background:#eee; padding:1em">
+                    <h3 class="text-center">Materi</h3>
+                    <div class="container">
+                        <div class="input-group flex-nowrap">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text" id="addon-wrapping">Cari Materi</span>
+                            </div>
+                            <input type="text" class="form-control" placeholder="Judul Materi"
+                                aria-describedby="addon-wrapping">
+                        </div>
+                        <br>
+                        <button class="btn btn-success" style="width: 100%;">Tambahkan materi</button>
+                        <br>
+                        <br>
+                        <div class="materi">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-12" style="background:#ddd; padding:1em">
+                    <h3 class="text-center">Kategori</h3>
+                    <button class="btn btn-success" style="width: 100%;" onclick="addKategori()">Tambahkan
+                        Kategori</button>
+
+                    <br>
+                    <br>
+                    <ul class="kategori">
+                    </ul>
+                </div>
+            </div>
+        </section>
+        <section id="footer">
+            Made with <i class="fa fa-heart" style="color: red"></i> By Zairussalam Lab
+        </section>
+    </div>
+    <script src="./data/js/jquery.min.js"></script>
+    <script src="./data/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-storage.js"></script>
+    <script src="data/js/firebase-init.js"></script>
+
+    <script>
+        var id_kategori = 1
+        var kategori = null
+        var materi = null
+        function getAllData() {
+            firebase.database().ref('kategori').once('value').then(function (snapshot) {
+                kategori = snapshot.val()
+                $('.kategori').empty()
+                kategori.forEach(function (it) {
+                    var html =
+                        `<li class="item-kat" onclick="getKategori(event, ${it.id_kategori})">${it.name}</li>
+                `
+                    $('.kategori').append(html)
+                })
+            }).then(() => {
+                $($('.item-kat')[0]).addClass('active')
+                firebase.database().ref('materi').once('value').then(function (snapshot) {
+                    materi = snapshot.val()
+                    $('.materi').empty()
+                    materi.forEach(it => {
+                        var html = `
+                    <div class="card">
+                                <div class="row">
+                                    <div class="col-lg-9">
+                                        <h4>${it.title}</h4>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <a href="./data/html/edit.html?id=${it.id_materi}"><button class="btn btn-success btn-sm">Edit</button></a>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteMateri()">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                    `
+                        $('.materi').append(html)
+                    });
+                })
+            })
+        }
+        getAllData()
+        function getKategori(event, id) {
+            id_kategori = id
+            $('li.active').removeClass('active')
+            $($('li')[id - 1]).addClass('active')
+            getMateri(id)
+        }
+        function getMateri(id_kategori) {
+            $('.materi').empty()
+            materi.forEach((it) => {
+                if (it.id_kategori == id_kategori) {
+                    var html = `
+                    <div class="card">
+                                <div class="row">
+                                    <div class="col-lg-9">
+                                        <h4>${it.title}</h4>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <a href="./data/html/edit.html?id=${it.id_materi}"><button class="btn btn-success btn-sm">Edit</button></a>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteMateri()">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                    `
+                    $('.materi').append(html)
+                }
+            })
+        }
+
+        $('.form-control').on('input', () => {
+            var q = $('.form-control').val()
+            $('.materi').empty()
+            materi.forEach((it) => {
+                console.log(it.title.toLowerCase())
+                console.log(q.toLowerCase())
+                if (it.title.toLowerCase().includes(q.toLowerCase())) {
+                    var html = `
+                    <div class="card">
+                                <div class="row">
+                                    <div class="col-lg-9">
+                                        <h4>${it.title}</h4>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <a href="./data/html/edit.html?id=${it.id_materi}"><button class="btn btn-success btn-sm">Edit</button></a>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteMateri()">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                    `
+                    $('.materi').append(html)
+                }
+            })
+        })
+        function addKategori() {
+            var id = kategori.length + 1
+            var kat = $('.add-kategori').val()
+            Swal.fire({
+                title: 'Tambahkan Kategori?',
+                input: 'text',
+                inputAttributes: {
+                    autocapitalize: 'off'
+                },
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya',
+                preConfirm: (insert) => {
+                    return firebase.database().ref('kategori/' + (id - 1)).set({
+                        id_kategori: id,
+                        name: insert
+                    }).then((response) => {
+                        return response
+                    })
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then(() => {
+                Swal.fire(
+                    'Berhasil!',
+                    'Berhasil menambahkan kategori',
+                    'success'
+                )
+                getAllData()
+            })
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,48 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Admin Kamus Teknik Mesin</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+
+</head>
+
+<body>
+    <div class="container">
+        <input type="file" name="images" accept="image/*" id="img-content">
+        <textarea name="content" id="content" cols="30" rows="10"></textarea>
+        <button id="submit">Submit Materi</button>
+    </div>
+
+    <script src="../js/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@9"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.6.1/firebase-storage.js"></script>
+    <script src="../js/firebase-init.js"></script>
+    <script>
+
+        $('#submit').click(function () {
+            var file = $('#img-content').prop('files')[0];
+            var ref = firebase.storage().ref();
+            var name = "gambar1"
+            var metadata = {
+                contentType: file.type
+            };
+            console.log("clicked")
+            var task = ref.child(name).put(file, metadata);
+            task
+            .then(snapshot => snapshot.ref.getDownloadURL())
+            .then((url)=>{
+                console.log(url)
+            })
+            .catch(console.error)
+        })
+    </script>
+</body>
+
+</html>
