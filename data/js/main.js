@@ -1,6 +1,7 @@
-var id_kategori = 1;
+var id_kategori = 0;
 var kategori = null;
 var materi = null;
+var id_materi_edit = 0
 function getAllData() {
     firebase.database().ref('kategori').once('value').then(function (snapshot) {
         kategori = snapshot.val();
@@ -27,8 +28,8 @@ function getAllData() {
                                         <h4>${it.title}</h4>
                                     </div>
                                     <div class="col-lg-3">
-                                        <a href="./data/html/edit.html?id=${it.id_materi}"><button class="btn btn-success btn-sm">Edit</button></a>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteMateri()">Delete</button>
+                                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#editModal" onclick="showMateriDetail(${it.id_materi})">Edit</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteMateri(${it.id_materi})">Delete</button>
                                     </div>
                                 </div>
                             </div>
@@ -42,7 +43,7 @@ getAllData();
 function getKategori(event, id) {
     id_kategori = id;
     $('li.active').removeClass('active');
-    $($('li')[id - 1]).addClass('active');
+    $($('li')[id]).addClass('active');
     getMateri(id);
 }
 function getMateri(id_kategori) {
@@ -56,8 +57,8 @@ function getMateri(id_kategori) {
                                         <h4>${it.title}</h4>
                                     </div>
                                     <div class="col-lg-3">
-                                        <a href="./data/html/edit.html?id=${it.id_materi}"><button class="btn btn-success btn-sm">Edit</button></a>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteMateri()">Delete</button>
+                                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#editModal" onclick="showMateriDetail(${it.id_materi})">Edit</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteMateri(${it.id_materi})">Delete</button>
                                     </div>
                                 </div>
                             </div>
@@ -73,18 +74,18 @@ $(document).ready(() => {
         materi.forEach((it) => {
             if (it.title.toLowerCase().includes(q.toLowerCase())) {
                 var html = `
-                        <div class="card">
-                                    <div class="row">
-                                        <div class="col-lg-9">
-                                            <h4>${it.title}</h4>
-                                        </div>
-                                        <div class="col-lg-3">
-                                            <a href="./data/html/edit.html?id=${it.id_materi}"><button class="btn btn-success btn-sm">Edit</button></a>
-                                            <button class="btn btn-danger btn-sm" onclick="deleteMateri()">Delete</button>
-                                        </div>
+                    <div class="card">
+                                <div class="row">
+                                    <div class="col-lg-9">
+                                        <h4>${it.title}</h4>
+                                    </div>
+                                    <div class="col-lg-3">
+                                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#editModal" onclick="showMateriDetail(${it.id_materi})">Edit</button>
+                                        <button class="btn btn-danger btn-sm" onclick="deleteMateri(${it.id_materi})">Delete</button>
                                     </div>
                                 </div>
-                        `
+                            </div>
+                    `;
                 $('.materi').append(html)
             }
         })
@@ -129,14 +130,14 @@ function validateAndUpload() {
             title: 'Anda yakin untuk menambah materi baru?',
             text: 'Pastikan semua data yang anda masukkan telah benar',
             icon: 'warning',
-            showCancelButton : true,
+            showCancelButton: true,
             confirmButtonColor: '#3085d6',
             cancelButtonColor: '#d33',
             confirmButtonText: 'Lanjutkan'
         }).then((res) => {
             if (res.value) {
                 var key = Date.now()
-                var idMateri = materi.length + 1
+                var idMateri = materi.length
                 var judulMateri = $('#judul-materi').val()
                 var kategoriMateri = Number($("#kategori-materi").val())
                 var kontenMateri = $('#konten-materi').val()
@@ -164,7 +165,7 @@ function validateAndUpload() {
                                     $('.progress-bar').css('width', progress + "%");
                                 })
                             task.then(() => {
-                                firebase.database().ref('materi/' + (idMateri - 1)).set({
+                                firebase.database().ref('materi/' + (idMateri)).set({
                                     id_materi: idMateri,
                                     id_kategori: kategoriMateri,
                                     img: judulMateri,
@@ -187,7 +188,7 @@ function validateAndUpload() {
 
                             })
                         } else {
-                            firebase.database().ref('materi/' + (idMateri - 1)).set({
+                            firebase.database().ref('materi/' + (idMateri)).set({
                                 id_materi: idMateri,
                                 id_kategori: kategoriMateri,
                                 img: gambarMateri,
@@ -210,12 +211,6 @@ function validateAndUpload() {
                         }
                     }
                     // allowOutsideClick: 0
-                }).then((result) => {
-                    if (
-                        result.dismiss === Swal.DismissReason.timer
-                    ) {
-                        console.log('I was closed by the timer') // eslint-disable-line
-                    }
                 })
             }
         })
@@ -228,7 +223,7 @@ function validateAndUpload() {
     }
 }
 function addKategori() {
-    var id = kategori.length + 1;
+    var id = kategori.length;
     Swal.fire({
         title: 'Tambah Kategori',
         input: 'text',
@@ -245,7 +240,7 @@ function addKategori() {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Ya',
         preConfirm: (insert) => {
-            return firebase.database().ref('kategori/' + (id - 1)).set({
+            return firebase.database().ref('kategori/' + id).set({
                 id_kategori: id,
                 name: insert
             }).then((response) => {
@@ -268,4 +263,84 @@ function addKategori() {
             getAllData();
         }
     });
+}
+function deleteMateri(id) {
+    var materiName = materi[id].title
+    Swal.fire({
+        title: 'Hapus materi?',
+        text: "Anda yakin ingin menghapus " + materiName,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Hapus'
+    }).then((result) => {
+        if (result.value) {
+            firebase.database().ref('materi/' + id).remove()
+            return true;
+        }
+        return false;
+    }).then((res) => {
+        if (res) {
+            firebase.database().ref('/').update({
+                dataKey: Date.now()
+            }).then(() => {
+                Swal.fire(
+                    'Terhapus!',
+                    'Materi telah dihapus',
+                    'success'
+                )
+                getAllData()
+            })
+        }
+    })
+}
+function showMateriDetail(id) {
+    var m = materi[id]
+    id_materi_edit = id
+    $('#judul-edit').val(m.title)
+    $('#konten-edit').val(m.content)
+    $('#preview-edit').html(m.content)
+    if (m.img.length != 0) {
+        var url = firebase.storage().ref().child(m.title).getDownloadURL()
+            .then((url) => {
+                $('#preview-gambar-edit').attr('src', url)
+            })
+    }
+}
+function editMateri() {
+
+    Swal.fire({
+        title: 'Anda yakin untuk mengubah materi ini?',
+        text: 'Pastikan semua data yang anda masukkan telah benar',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Lanjutkan'
+    }).then((res) => {
+        if (res.value) {
+            var newJudul = $('#judul-edit').val()
+            var newKonten = $('#konten-edit').val()
+            firebase.database().ref('/materi/' + id_materi_edit).update({
+                title: newJudul,
+                content: newKonten
+            }).then(() => {
+                firebase.database().ref('/').update({
+                    dataKey: Date.now()
+                }).then(() => {
+                    Swal.hideLoading()
+                    Swal.fire(
+                        'Sukses!',
+                        'Berhasil Mengubah Data!',
+                        'success'
+                    )
+                    getAllData()
+                    $('#editModal').modal('hide')
+                })
+
+            })
+        }
+    })
+
 }

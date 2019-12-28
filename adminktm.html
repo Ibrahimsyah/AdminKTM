@@ -70,7 +70,8 @@
                                             </div>
                                             <div class="col-4">
                                                 <h4 class="text-center">Preview</h4>
-                                                <img src="" id="preview-gambar" style="max-width: 100%;">
+                                                <img src="" id="preview-gambar"
+                                                    style="max-width: 100%;display: block; margin: auto">
                                                 <p id="preview-konten"></p>
                                             </div>
                                         </div>
@@ -78,7 +79,8 @@
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary"
                                             data-dismiss="modal">Cancel</button>
-                                        <button type="submit" class="btn btn-primary" onclick="validateAndUpload()">Tambahkan
+                                        <button type="submit" class="btn btn-primary"
+                                            onclick="validateAndUpload()">Tambahkan
                                             Materi</button>
                                     </div>
                                 </div>
@@ -88,13 +90,52 @@
                         <br>
                         <div class="materi">
                         </div>
+                        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-hidden="true">
+                            <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered"
+                                role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="modalMateriTitle">Edit Materi</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-8">
+                                                <div class="form-group">
+                                                    <label for="judul-edit" class="col-form-label">Judul
+                                                        Materi</label>
+                                                    <input type="text" class="form-control" id="judul-edit">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="konten-edit" class="col-form-label">Materi:</label>
+                                                    <textarea class="form-control" id="konten-edit"></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="col-4">
+                                                <h4 class="text-center">Preview</h4>
+                                                <img src="" id="preview-gambar-edit"
+                                                    style="max-width: 100%;display: block; margin: auto">
+                                                <p id="preview-edit"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary"
+                                            data-dismiss="modal">Cancel</button>
+                                        <button type="submit" class="btn btn-primary" onclick="editMateri()">Edit
+                                            Materi</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-lg-4 col-md-12" style="background:#ddd; padding:1em">
                     <h3 class="text-center">Kategori</h3>
                     <button class="btn btn-success" style="width: 100%;" onclick="addKategori()">Tambahkan
                         Kategori</button>
-
                     <br>
                     <br>
                     <ul class="kategori">
@@ -102,7 +143,6 @@
                 </div>
             </div>
         </section>
-        
         <section id="footer">
             Made with <i class="fa fa-heart" style="color: red"></i> By Zairussalam Lab
         </section>
@@ -120,4 +160,3 @@
 </body>
 
 </html>
-
