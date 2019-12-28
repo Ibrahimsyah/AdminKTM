@@ -1,7 +1,8 @@
+
 var id_kategori = 0;
 var kategori = null;
 var materi = null;
-var id_materi_edit = 0
+var id_materi_edit = 0;
 function getAllData() {
     firebase.database().ref('kategori').once('value').then(function (snapshot) {
         kategori = snapshot.val();
@@ -69,8 +70,8 @@ function getMateri(id_kategori) {
 }
 $(document).ready(() => {
     $('.cari-materi').on('input', () => {
-        var q = $('.form-control').val()
-        $('.materi').empty()
+        var q = $('.form-control').val();
+        $('.materi').empty();
         materi.forEach((it) => {
             if (it.title.toLowerCase().includes(q.toLowerCase())) {
                 var html = `
@@ -86,13 +87,12 @@ $(document).ready(() => {
                                 </div>
                             </div>
                     `;
-                $('.materi').append(html)
+                $('.materi').append(html);
             }
-        })
-    })
+        });
+    });
     bsCustomFileInput.init()
     $('#gambar-materi').on('change', () => {
-        console.log('onchange!')
         var img = $('#gambar-materi').prop('files')[0];
         var reader = new FileReader();
         reader.onload = function (e) {
@@ -103,8 +103,8 @@ $(document).ready(() => {
     })
     $('#konten-materi').on('input', () => {
         var text = $('#konten-materi').val()
-        $('#preview-konten').empty()
-        $('#preview-konten').append(text)
+        $('#preview-konten').empty();
+        $('#preview-konten').append(text);
     })
     $('#addMateri').on('hidden.bs.modal', function () {
         $('#judul-materi').val("");
@@ -115,15 +115,15 @@ $(document).ready(() => {
     });
 })
 function validateAndUpload() {
-    var isJudulExist = $('#judul-materi').val().length != 0
-    var isMateriExist = $('#konten-materi').val().length != 0
-    var isImgTypeRight = true
-    var img = $('#gambar-materi').prop('files')[0]
+    var isJudulExist = $('#judul-materi').val().length != 0;
+    var isMateriExist = $('#konten-materi').val().length != 0;
+    var isImgTypeRight = true;
+    var img = $('#gambar-materi').prop('files')[0];
     var regex = new RegExp("(.*?)\.(jpg|jpeg|png)$");
 
     if (img) {
-        var imgName = img.name.toLowerCase()
-        isImgTypeRight = regex.test(imgName)
+        var imgName = img.name.toLowerCase();
+        isImgTypeRight = regex.test(imgName);
     }
     if (isImgTypeRight && isJudulExist && isMateriExist) {
         Swal.fire({
@@ -149,7 +149,7 @@ function validateAndUpload() {
                 aria-valuemin="0" aria-valuemax="100"></div>
             </div>`,
                     onBeforeOpen: () => {
-                        Swal.showLoading()
+                        Swal.showLoading();
                     },
                     onOpen: () => {
 
@@ -163,7 +163,7 @@ function validateAndUpload() {
                                 .on('state_changed', function (snapshot) {
                                     var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                                     $('.progress-bar').css('width', progress + "%");
-                                })
+                                });
                             task.then(() => {
                                 firebase.database().ref('materi/' + (idMateri)).set({
                                     id_materi: idMateri,
@@ -180,13 +180,12 @@ function validateAndUpload() {
                                             'Sukses!',
                                             'Berhasil Memasukkan Data!',
                                             'success'
-                                        )
-                                        getAllData()
-                                        $('#addMateri').modal('hide')
-                                    })
-                                })
-
-                            })
+                                        );
+                                        getAllData();
+                                        $('#addMateri').modal('hide');
+                                    });
+                                });
+                            });
                         } else {
                             firebase.database().ref('materi/' + (idMateri)).set({
                                 id_materi: idMateri,
@@ -203,9 +202,9 @@ function validateAndUpload() {
                                         'Sukses!',
                                         'Berhasil Memasukkan Data!',
                                         'success'
-                                    )
+                                    );
                                     getAllData()
-                                    $('#addMateri').modal('hide')
+                                    $('#addMateri').modal('hide');
                                 })
                             })
                         }
@@ -243,9 +242,9 @@ function addKategori() {
             return firebase.database().ref('kategori/' + id).set({
                 id_kategori: id,
                 name: insert
-            }).then((response) => {
+            }).then(() => {
                 firebase.database().ref('/').update({
-                    dataKey: key
+                    dataKey: Date.now()
                 })
                     .then(() => {
                         return true;
@@ -265,7 +264,7 @@ function addKategori() {
     });
 }
 function deleteMateri(id) {
-    var materiName = materi[id].title
+    var materiName = materi[id].title;
     Swal.fire({
         title: 'Hapus materi?',
         text: "Anda yakin ingin menghapus " + materiName,
@@ -290,22 +289,22 @@ function deleteMateri(id) {
                     'Materi telah dihapus',
                     'success'
                 )
-                getAllData()
+                getAllData();
             })
         }
     })
 }
 function showMateriDetail(id) {
-    var m = materi[id]
-    id_materi_edit = id
-    $('#judul-edit').val(m.title)
-    $('#konten-edit').val(m.content)
-    $('#preview-edit').html(m.content)
+    var m = materi[id];
+    id_materi_edit = id;
+    $('#judul-edit').val(m.title);
+    $('#konten-edit').val(m.content);
+    $('#preview-edit').html(m.content);
     if (m.img.length != 0) {
-        var url = firebase.storage().ref().child(m.title).getDownloadURL()
+        firebase.storage().ref().child(m.title).getDownloadURL()
             .then((url) => {
-                $('#preview-gambar-edit').attr('src', url)
-            })
+            $('#preview-gambar-edit').attr('src', url);
+        })
     }
 }
 function editMateri() {
@@ -320,8 +319,8 @@ function editMateri() {
         confirmButtonText: 'Lanjutkan'
     }).then((res) => {
         if (res.value) {
-            var newJudul = $('#judul-edit').val()
-            var newKonten = $('#konten-edit').val()
+            var newJudul = $('#judul-edit').val();
+            var newKonten = $('#konten-edit').val();
             firebase.database().ref('/materi/' + id_materi_edit).update({
                 title: newJudul,
                 content: newKonten
@@ -329,14 +328,14 @@ function editMateri() {
                 firebase.database().ref('/').update({
                     dataKey: Date.now()
                 }).then(() => {
-                    Swal.hideLoading()
+                    Swal.hideLoading();
                     Swal.fire(
                         'Sukses!',
                         'Berhasil Mengubah Data!',
                         'success'
                     )
                     getAllData()
-                    $('#editModal').modal('hide')
+                    $('#editModal').modal('hide');
                 })
 
             })
