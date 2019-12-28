@@ -10,7 +10,7 @@ function getAllData() {
                 `<li class="item-kat" onclick="getKategori(event, ${it.id_kategori})">${it.name}</li>
                 `;
             $('.kategori').append(html);
-            var html1 = `<option value="${it.name}">${it.name}</option>`
+            var html1 = `<option value="${it.id_kategori}">${it.name}</option>`
             $('#kategori-materi').append(html1)
         })
     }).then(() => {
@@ -105,10 +105,10 @@ $(document).ready(() => {
         $('#preview-konten').append(text)
     })
 })
-function validateThenUpload() {
+function validateAndUpload() {
     var isJudulExist = $('#judul-materi').val().length != 0
     var isMateriExist = $('#konten-materi').val().length != 0
-    var isImgTypeRight
+    var isImgTypeRight = true
     var img = $('#gambar-materi').prop('files')[0]
     var regex = new RegExp("(.*?)\.(jpg|jpeg|png)$");
 
@@ -116,9 +116,78 @@ function validateThenUpload() {
         var imgName = img.name.toLowerCase()
         isImgTypeRight = regex.test(imgName)
     }
-    if(isImgTypeRight && isJudulExist && isMateriExist){
-        
-    }else{
+    if (isImgTypeRight && isJudulExist && isMateriExist) {
+        var idMateri = materi.length + 1
+        var judulMateri = $('#judul-materi').val()
+        var kategoriMateri = $("#kategori-materi").val()
+        var kontenMateri = $('#konten-materi').val()
+        var gambarMateri = ""
+        Swal.fire({
+            title: 'Mengunggah Materi ke Database',
+            html: `<div class="progress">
+            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0"
+                aria-valuemin="0" aria-valuemax="100"></div>
+            </div>`,
+            onBeforeOpen: () => {
+                Swal.showLoading()
+            },
+            onOpen: () => {
+
+                if (img) {
+                    var ref = firebase.storage().ref();
+                    var metadata = {
+                        contentType: img.type
+                    };
+                    var task = ref.child(judulMateri).put(img, metadata);
+                    task
+                        .on('state_changed', function (snapshot) {
+                            var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                            $('.progress-bar').css('width', progress + "%");
+                        })
+                    task.then(snapshot => snapshot.ref.getDownloadURL())
+                        .then((url) => {
+                            firebase.database().ref('materi/' + (idMateri - 1)).set({
+                                id_materi: idMateri,
+                                id_kategori: kategoriMateri,
+                                img: url,
+                                title: judulMateri,
+                                content: kontenMateri
+                            }).then((response) => {
+                                Swal.hideLoading()
+                                Swal.fire(
+                                    'Sukses!',
+                                    'Berhasil Memasukkan Data!',
+                                    'success'
+                                )
+                            });
+
+                        })
+                } else {
+                    firebase.database().ref('materi/' + (idMateri - 1)).set({
+                        id_materi: idMateri,
+                        id_kategori: kategoriMateri,
+                        img: gambarMateri,
+                        title: judulMateri,
+                        content: kontenMateri
+                    }).then((response) => {
+                        Swal.hideLoading()
+                        Swal.fire(
+                            'Sukses!',
+                            'Berhasil Memasukkan Data!',
+                            'success'
+                        )
+                    });
+                }
+            }
+            // allowOutsideClick: 0
+        }).then((result) => {
+            if (
+                result.dismiss === Swal.DismissReason.timer
+            ) {
+                console.log('I was closed by the timer') // eslint-disable-line
+            }
+        })
+    } else {
         Swal.fire(
             'Format belum benar',
             'Pastikan Judul dan Materi telah diisi. Jika ada gambar, pastikan format gambar adalah jpg, jpeg, atau png',
