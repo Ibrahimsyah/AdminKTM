@@ -99,12 +99,33 @@ $(document).ready(() => {
         reader.readAsDataURL(img);
 
     })
-    $('#konten-materi').on('input', () =>{
+    $('#konten-materi').on('input', () => {
         var text = $('#konten-materi').val()
         $('#preview-konten').empty()
         $('#preview-konten').append(text)
     })
 })
+function validateThenUpload() {
+    var isJudulExist = $('#judul-materi').val().length != 0
+    var isMateriExist = $('#konten-materi').val().length != 0
+    var isImgTypeRight
+    var img = $('#gambar-materi').prop('files')[0]
+    var regex = new RegExp("(.*?)\.(jpg|jpeg|png)$");
+
+    if (img) {
+        var imgName = img.name.toLowerCase()
+        isImgTypeRight = regex.test(imgName)
+    }
+    if(isImgTypeRight && isJudulExist && isMateriExist){
+        
+    }else{
+        Swal.fire(
+            'Format belum benar',
+            'Pastikan Judul dan Materi telah diisi. Jika ada gambar, pastikan format gambar adalah jpg, jpeg, atau png',
+            'error'
+        )
+    }
+}
 function addKategori() {
     var id = kategori.length + 1;
     Swal.fire({
