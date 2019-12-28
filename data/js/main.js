@@ -5,6 +5,7 @@ function getAllData() {
     firebase.database().ref('kategori').once('value').then(function (snapshot) {
         kategori = snapshot.val();
         $('.kategori').empty();
+        $('#kategori-materi').empty()
         kategori.forEach(function (it) {
             var html =
                 `<li class="item-kat" onclick="getKategori(event, ${it.id_kategori})">${it.name}</li>
@@ -104,6 +105,13 @@ $(document).ready(() => {
         $('#preview-konten').empty()
         $('#preview-konten').append(text)
     })
+    $('#addMateri').on('hidden.bs.modal', function () {
+        $('#judul-materi').val("");
+        $('#konten-materi').val("");
+        $('#gambar-materi').val(null);
+        $('#preview-gambar').attr('src', '');
+        $('#preview-konten').html("");
+    });
 })
 function validateAndUpload() {
     var isJudulExist = $('#judul-materi').val().length != 0
@@ -117,74 +125,98 @@ function validateAndUpload() {
         isImgTypeRight = regex.test(imgName)
     }
     if (isImgTypeRight && isJudulExist && isMateriExist) {
-        var idMateri = materi.length + 1
-        var judulMateri = $('#judul-materi').val()
-        var kategoriMateri = $("#kategori-materi").val()
-        var kontenMateri = $('#konten-materi').val()
-        var gambarMateri = ""
         Swal.fire({
-            title: 'Mengunggah Materi ke Database',
-            html: `<div class="progress">
+            title: 'Anda yakin untuk menambah materi baru?',
+            text: 'Pastikan semua data yang anda masukkan telah benar',
+            icon: 'warning',
+            showCancelButton : true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Lanjutkan'
+        }).then((res) => {
+            if (res.value) {
+                var key = Date.now()
+                var idMateri = materi.length + 1
+                var judulMateri = $('#judul-materi').val()
+                var kategoriMateri = Number($("#kategori-materi").val())
+                var kontenMateri = $('#konten-materi').val()
+                var gambarMateri = ""
+                Swal.fire({
+                    title: 'Mengunggah Materi ke Database',
+                    html: `<div class="progress">
             <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0"
                 aria-valuemin="0" aria-valuemax="100"></div>
             </div>`,
-            onBeforeOpen: () => {
-                Swal.showLoading()
-            },
-            onOpen: () => {
+                    onBeforeOpen: () => {
+                        Swal.showLoading()
+                    },
+                    onOpen: () => {
 
-                if (img) {
-                    var ref = firebase.storage().ref();
-                    var metadata = {
-                        contentType: img.type
-                    };
-                    var task = ref.child(judulMateri).put(img, metadata);
-                    task
-                        .on('state_changed', function (snapshot) {
-                            var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                            $('.progress-bar').css('width', progress + "%");
-                        })
-                    task.then(snapshot => snapshot.ref.getDownloadURL())
-                        .then((url) => {
+                        if (img) {
+                            var ref = firebase.storage().ref();
+                            var metadata = {
+                                contentType: img.type
+                            };
+                            var task = ref.child(judulMateri).put(img, metadata);
+                            task
+                                .on('state_changed', function (snapshot) {
+                                    var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                                    $('.progress-bar').css('width', progress + "%");
+                                })
+                            task.then(() => {
+                                firebase.database().ref('materi/' + (idMateri - 1)).set({
+                                    id_materi: idMateri,
+                                    id_kategori: kategoriMateri,
+                                    img: judulMateri,
+                                    title: judulMateri,
+                                    content: kontenMateri
+                                }).then(() => {
+                                    firebase.database().ref('/').update({
+                                        dataKey: key
+                                    }).then(() => {
+                                        Swal.hideLoading()
+                                        Swal.fire(
+                                            'Sukses!',
+                                            'Berhasil Memasukkan Data!',
+                                            'success'
+                                        )
+                                        getAllData()
+                                        $('#addMateri').modal('hide')
+                                    })
+                                })
+
+                            })
+                        } else {
                             firebase.database().ref('materi/' + (idMateri - 1)).set({
                                 id_materi: idMateri,
                                 id_kategori: kategoriMateri,
-                                img: url,
+                                img: gambarMateri,
                                 title: judulMateri,
                                 content: kontenMateri
-                            }).then((response) => {
-                                Swal.hideLoading()
-                                Swal.fire(
-                                    'Sukses!',
-                                    'Berhasil Memasukkan Data!',
-                                    'success'
-                                )
-                            });
-
-                        })
-                } else {
-                    firebase.database().ref('materi/' + (idMateri - 1)).set({
-                        id_materi: idMateri,
-                        id_kategori: kategoriMateri,
-                        img: gambarMateri,
-                        title: judulMateri,
-                        content: kontenMateri
-                    }).then((response) => {
-                        Swal.hideLoading()
-                        Swal.fire(
-                            'Sukses!',
-                            'Berhasil Memasukkan Data!',
-                            'success'
-                        )
-                    });
-                }
-            }
-            // allowOutsideClick: 0
-        }).then((result) => {
-            if (
-                result.dismiss === Swal.DismissReason.timer
-            ) {
-                console.log('I was closed by the timer') // eslint-disable-line
+                            }).then(() => {
+                                firebase.database().ref('/').update({
+                                    dataKey: key
+                                }).then(() => {
+                                    Swal.hideLoading()
+                                    Swal.fire(
+                                        'Sukses!',
+                                        'Berhasil Memasukkan Data!',
+                                        'success'
+                                    )
+                                    getAllData()
+                                    $('#addMateri').modal('hide')
+                                })
+                            })
+                        }
+                    }
+                    // allowOutsideClick: 0
+                }).then((result) => {
+                    if (
+                        result.dismiss === Swal.DismissReason.timer
+                    ) {
+                        console.log('I was closed by the timer') // eslint-disable-line
+                    }
+                })
             }
         })
     } else {
@@ -217,7 +249,12 @@ function addKategori() {
                 id_kategori: id,
                 name: insert
             }).then((response) => {
-                return true;
+                firebase.database().ref('/').update({
+                    dataKey: key
+                })
+                    .then(() => {
+                        return true;
+                    })
             });
         },
         allowOutsideClick: () => !Swal.isLoading()
